@@ -1,0 +1,19 @@
+ALUR SISTEM TEMPAT SAMPAH OTOMATIS
+
+1. sensor ir mendeteksi ada sampah di atas tempat sampah
+2. jika sensor ir aktif, raspberry pi perintahkan arduino untuk membuka tutup tempat sampah (motor dc)
+3. setelah tutup terbuka, tutup kembali secara otomatis
+4. raspberry pi mengambil gambar sampah dengan kamera
+5. gambar diproses dengan yolov8 untuk mendeteksi jenis sampah (paper, plastic, metal, other)
+6. hasil deteksi menentukan chamber tujuan:
+   - jika paper, stepper motor gerakkan chamber ke posisi paper
+   - jika plastic, stepper motor gerakkan chamber ke posisi plastic
+   - jika metal, stepper motor gerakkan chamber ke posisi metal
+   - jika other, stepper motor gerakkan chamber ke posisi other
+7. setelah chamber di posisi yang benar, servo membuka chamber supaya sampah jatuh
+8. servo menutup chamber kembali
+9. stepper motor mengembalikan chamber ke posisi awal
+10. sensor ultrasonik di tiap chamber mengukur volume sampah
+11. jika volume salah satu chamber penuh, lcd akan menampilkan notifikasi penuh
+12. semua error atau status dari arduino dikirim ke raspberry pi lewat serial, lalu ditampilkan di lcd
+13. proses kembali ke awal menunggu sensor ir aktif lagi 
