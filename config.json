@@ -1,0 +1,13 @@
+{
+  "kamera_index": 0,
+  "batas_volume": 80,
+  "port_serial": "/dev/ttyUSB0",
+  "baud_rate": 9600,
+  "pin_sensor_ir": 4,
+  "pin_ultrasonik": [
+    {"trigger": 18, "echo": 19},
+    {"trigger": 20, "echo": 21},
+    {"trigger": 22, "echo": 23},
+    {"trigger": 24, "echo": 25}
+  ]
+} 

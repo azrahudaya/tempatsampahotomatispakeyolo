@@ -1,19 +1,41 @@
 ALUR SISTEM TEMPAT SAMPAH OTOMATIS
 
 1. sensor ir mendeteksi ada sampah di atas tempat sampah
-2. jika sensor ir aktif, raspberry pi perintahkan arduino untuk membuka tutup tempat sampah (motor dc)
+2. kalau sensor ir aktif, raspberry pi perintahkan arduino untuk membuka tutup tempat sampah (motor dc)
 3. setelah tutup terbuka, tutup kembali secara otomatis
-4. raspberry pi mengambil gambar sampah dengan kamera
-5. gambar diproses dengan yolov8 untuk mendeteksi jenis sampah (paper, plastic, metal, other)
-6. hasil deteksi menentukan chamber tujuan:
-   - jika paper, stepper motor gerakkan chamber ke posisi paper
-   - jika plastic, stepper motor gerakkan chamber ke posisi plastic
-   - jika metal, stepper motor gerakkan chamber ke posisi metal
-   - jika other, stepper motor gerakkan chamber ke posisi other
-7. setelah chamber di posisi yang benar, servo membuka chamber supaya sampah jatuh
-8. servo menutup chamber kembali
-9. stepper motor mengembalikan chamber ke posisi awal
-10. sensor ultrasonik di tiap chamber mengukur volume sampah
-11. jika volume salah satu chamber penuh, lcd akan menampilkan notifikasi penuh
+4. raspberry pi ambil gambar sampah dengan kamera
+5. gambar diproses dengan yolov8 untuk deteksi jenis sampah (paper, plastic, metal, other)
+6. hasil deteksi tentukan chamber tujuan:
+   - kalau paper, stepper motor gerakkan chamber ke posisi paper
+   - kalau plastic, stepper motor gerakkan chamber ke posisi plastic
+   - kalau metal, stepper motor gerakkan chamber ke posisi metal
+   - kalau other, stepper motor gerakkan chamber ke posisi other
+7. setelah chamber di posisi yang benar, servo buka chamber supaya sampah jatuh
+8. servo tutup chamber lagi
+9. stepper motor balikin chamber ke posisi awal
+10. sensor ultrasonik di tiap chamber ukur volume sampah
+11. kalau volume salah satu chamber penuh, lcd tampilkan notifikasi penuh
 12. semua error atau status dari arduino dikirim ke raspberry pi lewat serial, lalu ditampilkan di lcd
-13. proses kembali ke awal menunggu sensor ir aktif lagi 
+13. proses kembali ke awal, nunggu sensor ir aktif lagi
+
+---
+
+CONTOH SKENARIO KEJADIAN:
+
+1. proses normal
+   - sensor ir aktif, tutup terbuka, kamera berhasil ambil gambar, deteksi berhasil, chamber bergerak, servo buka-tutup, volume dicek, tidak ada error.
+
+2. sensor ir tidak mendeteksi
+   - tidak ada sampah terdeteksi, sistem tetap menunggu sampai sensor ir aktif.
+
+3. kamera gagal ambil gambar
+   - setelah tutup tertutup, kamera gagal ambil gambar, lcd tampilkan "kamera gagal ambil gambar", proses berhenti dan menunggu sensor ir lagi.
+
+4. chamber penuh
+   - setelah volume dicek, salah satu chamber (misal: plastic) sudah penuh, lcd tampilkan "ch2 penuh! segera kosongkan", proses tetap berjalan untuk chamber lain.
+
+5. error dari arduino
+   - misal stepper motor macet atau limit switch aktif, arduino kirim pesan error ke raspberry pi, lcd tampilkan error misal "limit kanan aktif" atau "timeout stepper".
+
+6. arduino tidak terhubung
+   - saat raspberry pi kirim perintah ke arduino tapi tidak ada respon, lcd tampilkan "arduino error" atau "tidak terhubung", sistem akan coba konek ulang otomatis. 

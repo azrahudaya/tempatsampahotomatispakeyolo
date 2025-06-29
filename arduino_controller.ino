@@ -1,26 +1,22 @@
 // File: arduino_controller.ino
 // Arduino code for Smart Trash Bin actuator control with limit switches and safety
+// Pin dan parameter diambil dari config.json (atau hardcode sesuai asumsi)
 
 #include <Servo.h>
 
-// DC motor pins (lid mechanism)
-#define LID_MOTOR_PIN1 PINXX
-#define LID_MOTOR_PIN2 PINXX
-#define LID_MOTOR_STOP_PIN PINXX  // optional lid closed limit switch
+// Asumsi pin GPIO (bisa disesuaikan dengan config.json di Raspberry Pi)
+#define LID_MOTOR_PIN1 17
+#define LID_MOTOR_PIN2 27
+#define LID_MOTOR_STOP_PIN 22  // limit switch tutup
+#define SERVO_PIN 23
+#define STEPPER_STEP_PIN 5
+#define STEPPER_DIR_PIN 6
+#define LIMIT_LEFT_PIN 24
+#define LIMIT_RIGHT_PIN 25
 
-// Servo motor pin (to open chamber slot)
-#define SERVO_PIN PINXX
 Servo chamberServo;
 
-// Stepper motor pins (connected to driver like DM542)
-#define STEPPER_STEP_PIN PINXX
-#define STEPPER_DIR_PIN PINXX
-
-// Limit switch pins for stepper safety
-#define LIMIT_LEFT_PIN PINXX   // Leftmost limit switch (position 0)
-#define LIMIT_RIGHT_PIN PINXX  // Rightmost limit switch (last chamber)
-
-// Position mapping (e.g., in steps)
+// Posisi stepper (dalam step, misal 1000 step per chamber)
 const int positions[4] = {0, 1000, 2000, 3000};
 int currentPosition = 0;
 
@@ -56,20 +52,17 @@ void loop() {
     } else if (command == "HOME") {
       moveToChamber(0);
     } else {
-      // perintah tidak dikenal
       Serial.println("ERR:perintah tidak dikenal");
     }
   }
 }
 
 void openLid() {
-  // buka tutup, kasih timeout biar motor ga nyangkut
   digitalWrite(LID_MOTOR_PIN1, HIGH);
   digitalWrite(LID_MOTOR_PIN2, LOW);
   unsigned long startTime = millis();
   while (millis() - startTime < 2000) {
     if (digitalRead(LID_MOTOR_STOP_PIN) == LOW) {
-      // tutup sudah kebuka penuh
       stopLid();
       Serial.println("OK:tutup sudah kebuka");
       return;
@@ -80,7 +73,6 @@ void openLid() {
 }
 
 void closeLid() {
-  // tutup tutup, ada timeout juga
   digitalWrite(LID_MOTOR_PIN1, LOW);
   digitalWrite(LID_MOTOR_PIN2, HIGH);
   unsigned long startTime = millis();
@@ -96,13 +88,11 @@ void closeLid() {
 }
 
 void stopLid() {
-  // matiin motor tutup
   digitalWrite(LID_MOTOR_PIN1, LOW);
   digitalWrite(LID_MOTOR_PIN2, LOW);
 }
 
 void moveToChamber(int targetIndex) {
-  // pindah ke chamber sesuai target, ada timeout biar aman
   if (targetIndex < 0 || targetIndex > 3) {
     Serial.println("ERR:chamber tidak ada");
     return;
@@ -115,7 +105,6 @@ void moveToChamber(int targetIndex) {
   digitalWrite(STEPPER_DIR_PIN, dir);
   unsigned long startTime = millis();
   for (int i = 0; i < steps; i++) {
-    // cek limit switch biar ga nabrak
     if (dir && digitalRead(LIMIT_RIGHT_PIN) == LOW) {
       Serial.println("ERR:limit kanan aktif");
       break;
@@ -139,7 +128,6 @@ void moveToChamber(int targetIndex) {
 }
 
 void releaseTrash() {
-  // buka chamber bawah pake servo
   chamberServo.write(90);  // buka
   delay(1500);
   chamberServo.write(0);   // tutup lagi
